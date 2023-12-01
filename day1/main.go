@@ -1,13 +1,15 @@
 // started        2023-12-01 12:55;
 // finished part1 2023-12-01 13:23, 'go run' time s, run time after 'go build' s
-// finished part2 , 'go run' time s, run time after 'go build' s
+// finished part2 2023-12-01 14:20, 'go run' time s, run time after 'go build' s
 
 package main
 
 import (
 	_ "embed"
+	"errors"
 	"flag"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -17,6 +19,8 @@ import (
 var input string
 //go:embed test.txt
 var testInput string
+//go:embed test2.txt
+var testInput2 string
 
 func init() {
 	input = strings.TrimRight(input, "\n")
@@ -37,15 +41,17 @@ func main() {
 	flag.Parse()
 	fmt.Println("Running part", part, ", test inputs = ", test)
 
-  if test {
-		input = testInput
-	}
-
 	var ans int
 	switch part {
 	case 1:
+		if test {
+			input = testInput
+		}
 		ans = part1(input)
 	case 2:
+		if test {
+			input = testInput2
+		}
 		ans = part2(input)
 	}
 	fmt.Println("Output:", ans)
@@ -71,7 +77,52 @@ func part1(input string) int {
 }
 
 func part2(input string) int {
-	return 0
+	parsed := parseInput(input)
+	parsedReverse := ReverseStringSlice(parsed)
+
+	stringDigits := []string{
+		"zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+	}
+	stringDigitsReverse := ReverseStringSlice(stringDigits)
+
+	// fmt.Println("zero: ", stringDigits[0], ", nine: ", stringDigits[9])
+	// fmt.Println("zero: ", stringDigitsReverse[0], ", nine: ", stringDigitsReverse[9])
+
+	firstNumREQuery := `\d`
+	for _, digit := range stringDigits {
+		firstNumREQuery += `|` + digit
+	}
+	lastNumREQuery := `\d`
+	for _, digit := range stringDigitsReverse {
+		lastNumREQuery += `|` + digit
+	}
+
+	firstNumRE := regexp.MustCompile(firstNumREQuery)
+	lastNumRE := regexp.MustCompile(lastNumREQuery)
+	var sum int
+
+	for i, line := range parsed {
+		lineReverse := parsedReverse[i]
+
+		first := firstNumRE.FindString(line)
+		last := ReverseString(lastNumRE.FindString(lineReverse))
+
+		firstString, err := DigitToString(first, stringDigits)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Converting digits to strings failed with error: %v\n", err)
+			os.Exit(2)
+		}
+		lastString, err := DigitToString(last, stringDigits)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "Converting digits to strings failed with error: %v\n", err)
+			os.Exit(2)
+		}
+
+		realNum := stringToInt(firstString + lastString)
+		sum += realNum
+	}
+
+	return sum
 }
 
 func parseInput(input string) (parsedInput []string) {
@@ -84,4 +135,33 @@ func parseInput(input string) (parsedInput []string) {
 func stringToInt(input string) int {
 	output, _ := strconv.Atoi(input)
 	return output
+}
+
+func ReverseStringSlice(s []string) (result []string) {
+	result = make([]string, len(s))
+  for i, v := range s {
+		result[i] = ReverseString(v)
+  }
+  return 
+}
+
+func ReverseString(s string) string {
+	var result string
+	for _, b := range s {
+		result = string(b) + result
+	}
+	return result
+}
+
+func DigitToString(s string, m []string) (string, error) {
+	i, err := strconv.Atoi(s)
+	if err == nil {
+		return strconv.Itoa(i), nil
+	}
+	for i, v := range m {
+		if v == s {
+			return strconv.Itoa(i), nil
+		}
+	}
+	return "-1", errors.New("Couldn't convert digit `" + s + "` to integer!")
 }
