@@ -1,6 +1,6 @@
 // started        2023-12-02 10:45;
 // finished part1 2023-12-02 11:35, 'go run' time s, run time after 'go build' s
-// finished part2 , 'go run' time s, run time after 'go build' s
+// finished part2 2023-12-02 11:39, 'go run' time s, run time after 'go build' s
 
 package main
 
@@ -66,12 +66,23 @@ func gamePossible(gameData game, r int, g int, b int) bool {
 			if set.red > r || set.green > g || set.blue > b {
 				return false
 			}
-			// fmt.Printf("  Set %v showed:\n", i)
-			// fmt.Printf("    red: %v\n", set.red)
-			// fmt.Printf("    green: %v\n", set.green)
-			// fmt.Printf("    blue: %v\n", set.blue)
 		}
 		return true
+}
+
+func gameFewest(gameData game) (r int, g int, b int) {
+	for _, set := range gameData.rounds {
+		if set.red > r {
+			r = set.red
+		}
+		if set.green > g {
+			g = set.green
+		}
+		if set.blue > b {
+			b = set.blue
+		}
+	}
+	return
 }
 
 func part1(input string) int {
@@ -89,7 +100,16 @@ func part1(input string) int {
 }
 
 func part2(input string) int {
-	return 0
+	games := parseGames(input)
+
+	var sum int
+
+	for _, game := range games {
+		r, g, b := gameFewest(game)
+		sum += r * g * b
+	}
+
+	return sum
 }
 
 func parseGames(input string) (games []game) {
