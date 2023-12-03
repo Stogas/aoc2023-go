@@ -1,11 +1,12 @@
 // started        2023-12-03 10:44;
 // finished part1 2023-12-03 12:03, 'go run' time s, run time after 'go build' s
-// finished part2 , 'go run' time s, run time after 'go build' s
+// finished part2 2023-12-03 12:58, 'go run' time s, run time after 'go build' s
 
 package main
 
 import (
 	_ "embed"
+	"errors"
 	"flag"
 	"fmt"
 	"strconv"
@@ -55,13 +56,6 @@ type numberLocation struct {
 	startPos   int
 	endPos     int
 	value      int
-}
-
-type symbolSearchPattern struct {
-	lineStart int
-	startPos  int
-	endPos    int
-	lineEnd   int
 }
 
 func findAllNumbers (s []string) (l []numberLocation) {
@@ -224,8 +218,102 @@ func part1(input string) int {
 	return sum
 }
 
+type gearLocation struct {
+	lineNum int
+	pos     int
+}
+
+func findAllStars(s []string) (g []gearLocation) {
+	for i, line := range s {
+		for j, char := range line {
+			if char == '*' {
+				g = append(g, gearLocation{lineNum: i, pos: j})
+			}
+		}
+	}
+
+	return
+}
+
+type numberForGears struct {
+	firstDigitLine int
+	firstDigitPos  int
+}
+
+func figureOutNumber(s []string, line int, pos int) (l numberForGears, value int) {
+	l.firstDigitLine = line
+	l.firstDigitPos = pos
+	for l.firstDigitPos > 0 {
+		_, err := strconv.Atoi(string(s[line][l.firstDigitPos - 1]))
+		if err != nil {
+			break
+		}
+		l.firstDigitPos--
+	}
+
+	var numberString string
+	fmt.Println(len(s[line]))
+	for x := l.firstDigitPos; x < len(s[line]); x++ {
+		_, err := strconv.Atoi(string(s[line][x]))
+		if err != nil {
+			x--
+			break
+		}
+		numberString += string(s[line][x])
+	}
+
+	value, _ = strconv.Atoi(numberString)
+
+	return
+}
+
+func gearRatio(s []string, g gearLocation) (r int, e error) {
+	adjacentNumbers := make(map[numberForGears]int)
+
+	lineStart := max(g.lineNum - 1, 0)
+	posStart := max(g.pos - 1, 0)
+	lineEnd := min(g.lineNum + 1, len(s))
+	posEnd := min(g.pos + 1, len(s[lineEnd]))
+
+	for x := lineStart; x <= lineEnd; x++ {
+		for y := posStart; y <= posEnd; y++ {
+			_, err := strconv.Atoi(string(s[x][y]))
+			if err != nil {
+				continue
+			}
+			l, value := figureOutNumber(s, x, y)
+			adjacentNumbers[l] = value
+		}
+	}
+
+	if len(adjacentNumbers) != 2 {
+		e = errors.New("This isn't a gear")
+		return
+	}
+
+	r = 1
+	for _, v := range adjacentNumbers {
+		r *= v
+	}
+
+	return
+}
+
 func part2(input string) int {
-	return 0
+	parsed := parseInput(input)
+	possibleGears := findAllStars(parsed)
+	sum := 0
+
+	for _, p := range possibleGears {
+		r, err := gearRatio(parsed, p)
+		if err != nil {
+			continue
+		}
+
+		sum += r
+	}
+
+	return sum
 }
 
 func parseInput(input string) (parsedInput []string) {
