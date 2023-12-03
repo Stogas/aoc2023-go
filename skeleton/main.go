@@ -1,8 +1,8 @@
 // skeleton template copied and modified from https://github.com/alexchao26/advent-of-code-go/blob/main/scripts/skeleton/tmpls/main.go
 
-// started        ;
-// finished part1 , 'go run' time s, run time after 'go build' s
-// finished part2 , 'go run' time s, run time after 'go build' s
+// started        at: ---
+// finished part1 at: ---
+// finished part2 at: ---
 
 package main
 

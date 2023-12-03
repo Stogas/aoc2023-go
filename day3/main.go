@@ -1,6 +1,6 @@
-// started        2023-12-03 10:44;
-// finished part1 2023-12-03 12:03, 'go run' time s, run time after 'go build' s
-// finished part2 2023-12-03 12:58, 'go run' time s, run time after 'go build' s
+// started        2023-12-03 10:44
+// finished part1 2023-12-03 12:03
+// finished part2 2023-12-03 12:58
 
 package main
 
