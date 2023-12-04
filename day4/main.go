@@ -1,6 +1,8 @@
 // started        at: 2023-12-04 21:01
 // finished part1 at: 2023-12-04 21:47
-// finished part2 at: ---
+// pause start at:    2023-12-04 22:02
+// resume at:         2023-12-04 22:06
+// finished part2 at: 2023-12-04 22:11
 
 package main
 
@@ -52,9 +54,9 @@ func main() {
 }
 
 type card struct {
-	// id int
 	winningNumbers []int
 	myNumbers []int
+	multiplier int
 }
 
 // returns common elements between a and b
@@ -71,7 +73,6 @@ func innerJoin(a []int, b []int) (c []int) {
 
 func part1(input string) int {
 	cards := parseInput(input)
-	// fmt.Println(cards)
 
 	sum := 0
 
@@ -84,16 +85,24 @@ func part1(input string) int {
 }
 
 func part2(input string) int {
-	return 0
+	cards := parseInput(input)
+
+	sum := 0
+
+	for i, a := range cards {
+		j := i
+		for j := j + len(innerJoin(a.winningNumbers, a.myNumbers)); j > i; j-- {
+			cards[j].multiplier += cards[i].multiplier
+		}
+		sum += cards[i].multiplier
+	}
+
+	return sum
 }
 
 func parseInput(input string) (parsedInput []card) {
 	for _, line := range strings.Split(input, "\n") {
-		c := card{}
-
-		// cardRE := regexp.MustCompile(`^Card (\d)+: `)
-		// fmt.Println("debug: ", line)
-		// c.id = stringToInt(cardRE.FindStringSubmatch(line)[0])
+		c := card{multiplier: 1}
 
 		_, line, _ = strings.Cut(line, `: `)
 		winningNumbers, myNumbers, _ := strings.Cut(line, ` | `)
